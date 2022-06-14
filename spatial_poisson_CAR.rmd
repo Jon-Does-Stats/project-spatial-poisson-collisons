@@ -1,0 +1,1452 @@
+---
+title: "Spatial Analysis - Traffic Collisions"
+author: "Jonathan Schierbaum"
+date: "SPRING 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+
+packages <- c("knitr", "dplyr", "sp", 
+              "sf", "tmap", "ggmap", 
+              "rgdal", "raster", "tigris", 
+              "parallel", "geosphere", "rgeos", 
+              "rgdal", "tmaptools", "broom", 
+              "tidyverse", "mice", "VIM", 
+              "lubridate", "hglm", "spatstat", 
+              "maptools", "dhglm", "MASS", 
+              "ggplot2", "R.devices", "grid")
+
+missing <- packages[!(packages %in% installed.packages())]
+
+if(length(missing) > 0) install.packages(missing) 
+
+invisible(suppressMessages(
+  lapply(packages, library, character.only = TRUE)))
+```
+
+
+## Load Data Objects for Faster Results and Visualization
+
+```{r load_data_objects}
+fp_raw_data <- "~/GitHub/project-spatial-poisson-collisions/raw_data/"
+
+fp_data_obj <- "~/GitHub/project-spatial-poisson-collisons/data_objs/"
+
+fp_figures <- "~/GitHub/project-spatial-poisson-collisons/figures/"
+
+load(paste0(fp_data_obj, "vis_objects.RData"))
+load(paste0(fp_data_obj, "regression_objects.RData"))
+
+# load(paste0(fp_data_obj, "project_data_raw.RData"))
+# load(paste0(fp_data_obj, "removed_records.RData"))
+```
+
+### Inspection & Helper Functions
+
+```{r functions}
+# number of na elements by column
+# sapply(df, function(x) sum(is.na(x)))
+
+# number of unique elements by column
+# sapply(df, function(x) length(unique(x)))
+
+# converts ggmap tiles (from google maps api) to a form usable by other packages.
+ggmap_rast <- function(map){
+  map_bbox <- attr(map, 'bb') 
+  .extent  <- extent(as.numeric(map_bbox[c(2,4,1,3)]))
+  my_map   <- raster(.extent, nrow= nrow(map), ncol = ncol(map))
+  rgb_cols <- setNames(as.data.frame(t(col2rgb(map))), c('red','green','blue'))
+  red           <- my_map
+  values(red)   <- rgb_cols[['red']]
+  green         <- my_map
+  values(green) <- rgb_cols[['green']]
+  blue          <- my_map
+  values(blue)  <- rgb_cols[['blue']]
+  stack(red,green,blue)
+}
+
+# Scatterplots with LOWESS lines
+plot_pairs_cont <- function(dat, yvar) {
+ 
+    # loop through columns to graph scatterplots
+    for (i in 2:length(dat)) {
+        
+        plot(dat[,i], dat[, yvar], 
+             xlab = names(dat)[i], ylab = yvar, 
+             cex.lab = 2, cex.axis = 2)
+        
+        # add lowess line for non-factor/non-character variables
+        if (!(class(dat[,i]) %in% c('factor', 'character'))) {
+            lines(lowess(dat[,i], dat[, yvar]), col = "red")
+        }
+        
+    }  # end loop
+}  # end function
+```
+
+
+## Regression Analysis - Generalized Response w/ Spatial Dependence
+
+Generalized Linear Mixed Model: Generalized Poisson response + log link function + Spatially Correlated Residuals
+
+```{r main_analysis, eval = FALSE}
+project_grid_sp <- as_Spatial(project_grid)
+
+# full
+formula1 <- collision_count ~ oci_avg + 
+              pothole_count + pholes_avg + 
+              liquor_count + liquor_avg + 
+              traffic_light_count + t_lights_avg + 
+              street_light_count + s_lights_avg 
+
+# reduced to counts
+formula2 <- collision_count ~ oci_avg + 
+              pothole_count + 
+              liquor_count + 
+              traffic_light_count +
+              street_light_count
+
+# reduced to collision radius 
+formula3 <- collision_count ~ oci_avg + 
+              pholes_avg + 
+              liquor_avg + 
+              t_lights_avg +
+              s_lights_avg
+
+X_mat1 <- lm(formula1, data = project_grid_sp)
+
+X_mat1 <- model.matrix(X_mat1)
+
+X_mat2 <- lm(formula2, data = project_grid_sp)
+
+X_mat2 <- model.matrix(X_mat2)
+
+X_mat3 <- lm(formula3, data = project_grid_sp)
+
+X_mat3 <- model.matrix(X_mat3)
+
+grid_nb <- spdep::poly2nb(project_grid_sp)
+
+nb_mat  <- spdep::nb2mat(grid_nb, style = "B")
+
+# full model
+fit_car_pois1 <- hglm(y = project_grid_sp@data$collision_count,
+                     X = X_mat1,
+                     Z = diag(nrow(project_grid_sp)),
+                     rand.family = CAR(D = nb_mat),
+                     family = poisson(link = "log"), 
+                     fix.disp = 1, 
+                     conv = 1e-8)
+
+# reduced model, counts 
+fit_car_pois2 <- hglm(y = project_grid_sp@data$collision_count,
+                     X = X_mat2,
+                     Z = diag(nrow(project_grid_sp)),
+                     rand.family = CAR(D = nb_mat),
+                     family = poisson(link = "log"), 
+                     fix.disp = 1, 
+                     conv = 1e-8)
+
+# reduced model, reduced to collision radius 
+fit_car_pois3 <- hglm(y = project_grid_sp@data$collision_count,
+                     X = X_mat3,
+                     Z = diag(nrow(project_grid_sp)),
+                     rand.family = CAR(D = nb_mat),
+                     family = poisson(link = "log"), 
+                     fix.disp = 1, 
+                     conv = 1e-8)
+
+
+# GLMs, no CAR component for comparison
+fit_pois1 <- glm(formula1, data = project_grid_sp, family = poisson(link = "log"))
+
+fit_pois2 <- glm(formula2, data = project_grid_sp, family = poisson(link = "log"))
+
+fit_pois3 <- glm(formula3, data = project_grid_sp, family = poisson(link = "log"))
+
+# residuals
+project_grid$CAR_full_fitted   <- fit_car_pois1$fv
+project_grid$CAR_full_resids   <- fit_car_pois1$resid
+project_grid$CAR_counts_fitted <- fit_car_pois2$fv
+project_grid$CAR_counts_resids <- fit_car_pois2$resid
+project_grid$CAR_radii_fitted  <- fit_car_pois3$fv
+project_grid$CAR_radii_resids  <- fit_car_pois3$resid
+
+project_grid$full_fitted    <- fit_pois1$fitted.values
+
+project_grid$full_resids    <- project_grid_sp$collision_count - 
+fit_pois1$fitted.values
+
+project_grid$counts_fitted  <- fit_pois2$fitted.values
+
+project_grid$counts_resids  <- project_grid_sp$collision_count - 
+fit_pois2$fitted.values
+
+project_grid$radii_fitted   <- fit_pois3$fitted.values
+
+project_grid$radii_resids   <- project_grid_sp$collision_count - 
+fit_pois3$fitted.values
+
+
+# Analysis without outliers
+
+X_mat4 <- lm(formula2, data = project_grid_no_outliers)
+
+X_mat4 <- model.matrix(X_mat4)
+
+X_mat5 <- lm(formula3, data = project_grid_no_outliers)
+
+X_mat5 <- model.matrix(X_mat5)
+
+grid_nb2 <- spdep::poly2nb(project_grid_no_outliers)
+
+nb_mat2  <- spdep::nb2mat(grid_nb2, style = "B")
+
+# reduced model, counts 
+fit_car_pois4 <- hglm(y = project_grid_no_outliers$collision_count,
+                     X = X_mat4,
+                     Z = diag(nrow(project_grid_no_outliers)),
+                     rand.family = CAR(D = nb_mat2),
+                     family = poisson(link = "log"), 
+                     fix.disp = 1, 
+                     conv = 1e-8)
+
+# reduced model, reduced to collision radius
+fit_car_pois5 <- hglm(y = project_grid_no_outliers$collision_count,
+                     X = X_mat5,
+                     Z = diag(nrow(project_grid_no_outliers)),
+                     rand.family = CAR(D = nb_mat2),
+                     family = poisson(link = "log"), 
+                     fix.disp = 1, 
+                     conv = 1e-8)
+
+# save(project_grid, project_grid_no_outliers, fit_pois1, fit_pois2, fit_pois3,
+#      fit_car_pois1, fit_car_pois2, fit_car_pois3,
+#      fit_car_pois4, fit_car_pois5,
+#      file = paste0(fp_data_obj, "regression_objects.RData"))
+```
+###  Regression Output Summaries
+
+#### Counts vs. Radii Average
+
+```{r predictor_summaries}
+# all predictors
+summary(fit_car_pois1)
+
+# count predictors
+summary(fit_car_pois2)
+
+# average around radii predictors
+summary(fit_car_pois3)
+```
+
+#### CAR vs. No CAR
+
+```{r autocorrelation_summaries}
+
+# no accounting for spatial autocorrelation
+summary(fit_pois3)
+
+# accounts for spatial autocorrelation
+summary(fit_car_pois3)
+
+```
+
+#### Outlier vs. No Outlier
+
+```{r outlier_summaries}
+# includes outlier
+summary(fit_car_pois3)
+
+# excludes outlier
+summary(fit_car_pois5)
+```
+
+## Visualize, EDA
+### EDA: Scatterplots & Pair correlation
+
+```{r predictor-correlation, eval = FALSE}
+project_grid_sp <- as_Spatial(project_grid)
+
+
+pairs1 <- c("collision_count", "liquor_count",
+            "traffic_light_count", "street_light_count",
+            "pothole_count")        
+
+pairs2 <- c("collision_count", "oci_avg", 
+            "liquor_avg", "pholes_avg", 
+            "t_lights_avg", "s_lights_avg")
+
+pairs3 <- c("oci_avg", "pothole_count", 
+            "pholes_avg", "liquor_count", 
+            "liquor_avg", "traffic_light_count", 
+            "t_lights_avg", "street_light_count", 
+            "s_lights_avg")
+
+pairs_df1 <- dplyr::select(project_grid_sp@data, pairs1)
+pairs_df2 <- dplyr::select(project_grid_sp@data, pairs2)
+pairs_df3 <- dplyr::select(project_grid_sp@data, pairs3)
+
+# EDA: SCATTERPLOTS AND PAIR PLOTS
+par(mfrow=c(2, 2))
+plot_pairs_cont(pairs_df1, yvar = "collision_count")
+
+par(mfrow=c(2, 3))
+plot_pairs_cont(pairs_df2, yvar = "collision_count")
+
+GGally::ggpairs(pairs_df3, progress = FALSE)
+```
+
+### EDA: Spatial Summary Plots
+```{r presentation_plots}
+# EDA: ILLUSTRATE BOUNDING BOX
+tm_shape(canvas) + 
+  tm_rgb() +
+  tm_shape(bbox_project_4326) + 
+  tm_borders(col = "red") + 
+  tm_shape(col_2019_inside_4326) +
+  tm_dots(col = "mediumpurple4", 
+          size = .20, 
+          alpha = .60) +
+  tm_shape(col_2019_outside_4326) +
+  tm_dots(col = "darkorange", 
+          size = .20, 
+          alpha = .60)
+
+# EDA: OVERVIEW AND COVARIATES
+
+map1 <- tm_shape(roads_buffer,  bbox = bbox_project) +
+                  tm_polygons(col = "oci", 
+                              border.alpha = 0.5,
+                              title = "Road condition index",
+                              palette = "YlGn") +
+                  tm_shape(collisions_2019) +
+                  tm_dots(col = "deaths_injuries", 
+                          size = .09, 
+                          alpha = .80,
+                          title = "Casualties",
+                          palette = "plasma") +
+                  tm_shape(bbox_zoom) + 
+                  tm_borders(col = "red", alpha = 0.90, lwd = 2) +
+                  tm_layout(main.title = "Joining segment-wise \n road conditions...", 
+                            frame = FALSE, 
+                            legend.outside = TRUE)
+
+
+
+###
+map2 <- tm_shape(roads_buffer,  bbox = bbox_zoom) +
+                  tm_polygons(col = "oci", 
+                              border.alpha = 0.5,
+                              title = "Road condition index",
+                              palette = "YlGn") +
+                  tm_shape(collisions_2019) +
+                  tm_dots(col = "deaths_injuries", 
+                          size = .13, 
+                          alpha = .80,
+                          title = "Casualties", 
+                          palette = "plasma") +
+                  tm_shape(bbox_zoom) + 
+                  tm_borders(col = "red", alpha = 0.90, lwd = 2) +
+                  tm_layout(main.title = "...to individual auto collisions", 
+                            frame = FALSE, 
+                            legend.show = FALSE)
+
+
+png(file=paste0(fp_figures,"road_condition_assignment", ".png"), width = 10, height = 6.75, unit = "in", res = 225, antialias = "cleartype")
+
+tmap_arrange(map1, map2, ncol = 2, nrow = 1, asp = NA)
+
+dev.off()
+
+
+
+cols <- c("#1664AB", "#C44001", "#BB1419", "#147E3A")
+cols <- c("#1664ABE6", "#C4400133", "#BB1419E6", "#147E3AE6")
+
+map3 <- tm_shape(sd_boundary_city, bbox = bbox_project) + 
+          tm_borders(col = "#4E3524") +
+          
+          tm_shape(locations_agg) + 
+        
+          
+          tm_dots(col = "type", title = "Points of interest", size = 0.09, palette = cols, legend.hist = TRUE) + 
+          tm_layout(frame = FALSE, 
+                    legend.outside = TRUE,
+                    legend.title.size = 1.0,
+                    legend.text.size = 0.6,
+                    legend.outside.size = 0.5,
+                    legend.hist.height = 0.5,
+                    legend.hist.width = 0.7,
+                    legend.hist.size = 0.5)
+        
+        
+map4 <- tm_shape(canvas, bbox = bbox_project) + 
+          tm_rgb() + 
+        tm_shape(hex_agg_lines) +   
+          tm_lines(col = "Status", palette = c(Eligible = "#A2E4B8", Ineligible = "#D0342C"), legend.hist = TRUE) + 
+          tm_layout(frame = FALSE, 
+                    legend.outside = TRUE,
+                    legend.title.size = 1.0,
+                    legend.text.size = 0.6,
+                    legend.outside.size = 0.5,
+                    legend.hist.height = 0.5,
+                    legend.hist.width = 0.7,
+                    legend.hist.size = 0.5)
+        
+map5 <- tm_shape(project_grid, bbox = bbox_project) +
+          tm_polygons(col = "collision_count", 
+                      style = "fisher", 
+                      palette = "Reds",
+                      border.alpha = 0.5, 
+                      title = "Serious collisions", 
+                      legend.hist = TRUE) + 
+          tm_shape(hexagons_outside_analysis) +  
+          tm_polygons(col = "grey20", 
+                      border.alpha = 0.1) +
+          tm_layout(frame = FALSE, 
+                    legend.outside = TRUE,
+                    legend.title.size = 1.0,
+                    legend.text.size = 0.6,
+                    legend.outside.size = 0.5,
+                    legend.hist.height = 0.5,
+                    legend.hist.width = 0.7,
+                    legend.hist.size = 0.5)
+        
+map6 <- tm_shape(project_grid, bbox = bbox_project) +
+          tm_polygons(col = "liquor_count", 
+                      style = "fisher", 
+                      palette = "Blues", 
+                      border.alpha = 0.5, 
+                      title = "Liquor licenses", 
+                      legend.hist = TRUE) +
+          tm_shape(hexagons_outside_analysis) +  
+          tm_polygons(col = "grey20", 
+                      border.alpha = 0.1) +
+          tm_layout(frame = FALSE, 
+                    legend.outside = TRUE,
+                    legend.title.size = 1.0,
+                    legend.text.size = 0.6,
+                    legend.outside.size = 0.5,
+                    legend.hist.height = 0.5,
+                    legend.hist.width = 0.7,
+                    legend.hist.size = 0.5)
+        
+map7 <- tm_shape(project_grid, bbox = bbox_project) +
+          tm_polygons(col = "pothole_count", 
+                      style = "fisher", 
+                      palette = "Oranges", 
+                      border.alpha = 0.5, 
+                      title = "Potholes", 
+                      legend.hist = TRUE) +
+          tm_shape(hexagons_outside_analysis) +  
+          tm_polygons(col = "grey20", 
+                      border.alpha = 0.1) +
+          tm_layout(frame = FALSE, 
+                    legend.outside = TRUE,
+                    legend.title.size = 1.0,
+                    legend.text.size = 0.6,
+                    legend.outside.size = 0.5,
+                    legend.hist.height = 0.5,
+                    legend.hist.width = 0.7,
+                    legend.hist.size = 0.5)
+        
+map8 <- tm_shape(project_grid, bbox = bbox_project) +
+          tm_polygons(col = "traffic_light_count", 
+                      style = "fisher", 
+                      palette = "Greens", 
+                      border.alpha = 0.5, 
+                      title = "Traffic lights", 
+                      legend.hist = TRUE) +
+          tm_shape(hexagons_outside_analysis) +  
+          tm_polygons(col = "grey20", 
+                      border.alpha = 0.1) +
+          tm_layout(frame = FALSE, 
+                    legend.outside = TRUE,
+                    legend.title.size = 1.0,
+                    legend.text.size = 0.6,
+                    legend.outside.size = 0.5,
+                    legend.hist.height = 0.5,
+                    legend.hist.width = 0.7,
+                    legend.hist.size = 0.5)
+
+png(file=paste0(fp_figures,"areal_aggregation_summary", ".png"), width = 11, height = 7.5, unit = "in", res = 225, antialias = "cleartype")
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(
+        nrow = 3,
+        ncol = 3,
+        heights = c(0.10, 0.45, 0.45))))
+grid.text("From Point Processes to Areal Units", gp=gpar(fontsize=20), check=TRUE, vp = viewport(layout.pos.row = 1))
+print(map3, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
+print(map4, vp = viewport(layout.pos.row = 2, layout.pos.col = 2))
+print(map5, vp = viewport(layout.pos.row = 2, layout.pos.col = 3))
+print(map6, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
+print(map7, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
+print(map8, vp = viewport(layout.pos.row = 3, layout.pos.col = 3))
+
+dev.off()
+
+###
+tm_shape(roads_buffer,  bbox = bbox_project) +
+                  tm_polygons(col = "oci", 
+                              border.alpha = 0.5,
+                              title = "Road condition index",
+                              palette = "YlGn") +
+                  tm_shape(collisions_2019) +
+                  tm_dots(col = "deaths_injuries", 
+                          size = .13, 
+                          alpha = .80,
+                          title = "Casualties", 
+                          palette = "plasma") +
+                  tm_shape(bbox_zoom) + 
+                  tm_borders(col = "red", alpha = 0.90, lwd = 2) +
+                  tm_layout(main.title = "...to individual auto collisions", 
+                            frame = FALSE, 
+                            legend.show = FALSE)
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "collision_count", 
+              style = "fisher", 
+              palette = "Purples",
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) + 
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "Serious collision counts, 2019", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "oci_avg", 
+              style = "fisher", 
+              palette = "Reds",
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) + 
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "Avg. road quality of collisions", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "pothole_count", 
+              style = "fisher", 
+              palette = "Oranges", 
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) +
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "Pothole count within hexagons", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "pholes_avg", 
+              style = "fisher", 
+              palette = "Oranges", 
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) +
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "Avg. potholes within r of collisions", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "liquor_count", 
+              style = "fisher", 
+              palette = "Blues", 
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) +
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "liquor business count within hexagons", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "liquor_avg", 
+              style = "fisher", 
+              palette = "Blues", 
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) +
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "Avg. liquor businesses within r of collisions", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "traffic_light_count", 
+              style = "fisher", 
+              palette = "Greens", 
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) +
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "Traffic light count within hexagons", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "t_lights_avg", 
+              style = "fisher", 
+              palette = "Greens", 
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) +
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "Avg. traffic lights within r of collisions", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "street_light_count", 
+              style = "fisher", 
+              palette = "Greys", 
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) +
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "Street light count within hexagons", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+###
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "s_lights_avg", 
+              style = "fisher", 
+              palette = "Greys", 
+              border.alpha = 0.5, 
+              title = "", 
+              legend.hist = TRUE) +
+  tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", 
+              border.alpha = 0.1) +
+  tm_layout(main.title = "Avg. street lights within r of collisions", 
+            frame = FALSE, 
+            legend.outside = TRUE)
+
+```
+
+### Basic Histograms
+
+```{r histograms}
+collisions_wo_oci <- readRDS(paste0(fp_data_obj, "collisions_lacking_oci.rds"))
+
+hist(collisions_2019$POSIX, breaks = "week")
+hist(collisions_wo_oci$POSIX, breaks = "week")
+```
+
+### Illustrate Bounding Box
+
+```{r bounding_box, eval = FALSE}
+
+
+sdlonglat <- as.numeric(geocode("San Diego, California"))
+# Manual N-S Correction
+sdlonglat[[2]] <- sdlonglat[[2]] + 0.15
+# Manual E-W Correction
+sdlonglat[[1]] <- sdlonglat[[1]] + 0.20
+
+
+tm_shape(canvas) + 
+  tm_rgb() +
+tm_shape(sd_boundary_city) + 
+  tm_borders(col = "white")+
+tm_shape(bbox_project) + 
+  tm_borders(col = "red") + 
+tm_shape(collisions_2019) +
+  tm_dots(col = "mediumpurple4", 
+          size = .20, 
+          alpha = .60)
+
+
+tm_shape(canvas) + 
+  tm_rgb() +
+tm_shape(sd_boundary_city_4326) + 
+  tm_borders(col = "white")+
+tm_shape(bbox_project_4326) + 
+  tm_borders(col = "red") + 
+tm_shape(col_2019_inside_4326) +
+  tm_dots(col = "mediumpurple4", 
+          size = .20, 
+          alpha = .60) +
+tm_shape(col_2019_outside_4326) +
+  tm_dots(col = "darkorange", 
+          size = .20, 
+          alpha = .60)
+```
+
+### Diagnostic & Residual Plots
+```{r residual_plots} 
+png(file=paste0(fp_figures,"diagnostics_full_dataset", ".png"), width = 8, height = 8, unit = "in", res = 225, antialias = "cleartype")
+
+plot(fit_car_pois3, device = NULL)
+
+dev.off()
+dev.off()
+dev.off()
+
+png(file=paste0(fp_figures,"diagnostics_outliers_removed", ".png"), width = 8, height = 8, unit = "in", res = 225, antialias = "cleartype")
+
+plot(fit_car_pois5, device = NULL)
+
+dev.off()
+dev.off()
+dev.off()
+
+
+map1 <- tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "CAR_counts_resids", 
+              style = "fixed", 
+              midpoint = 0,
+              breaks = c(-Inf, -50, -5, 5, 50, Inf),
+              palette = "PiYG", n = 5,
+              border.alpha = 0.5, 
+              title = "Residuals", 
+              legend.hist = TRUE) + 
+tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", border.alpha = 0.1) +
+tm_layout(main.title = "HGLM (with CAR effects)", 
+          frame = FALSE, 
+          legend.outside = TRUE,
+          legend.hist.width = 3)
+
+map2 <- tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "counts_resids", 
+              style = "fixed", 
+              midpoint = 0,
+              breaks = c(-Inf, -50, -5, 5, 50, Inf),
+              palette = "PiYG", n = 5,
+              border.alpha = 0.5, 
+              title = "Residuals", 
+              legend.hist = TRUE) + 
+tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", border.alpha = 0.1) +
+tm_layout(main.title = "GLM (No spatial effects)", 
+          frame = FALSE, 
+          legend.outside = TRUE,
+          legend.hist.width = 2)
+
+png(file=paste0(fp_figures,"spatial_dependence_illustrated", ".png"), width = 8, height = 6, unit = "in", res = 225, antialias = "cleartype")
+
+tmap_arrange(map2, map1, ncol = 2, nrow = 1)
+
+dev.off()
+
+
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "CAR_radii_resids", 
+              style = "fixed", 
+              midpoint = 0,
+              breaks = c(-Inf, -50, -5, 5, 50, Inf),
+              palette = "PiYG", n = 5,
+              border.alpha = 0.5, 
+              title = "Residuals", 
+              legend.hist = TRUE) + 
+tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", border.alpha = 0.1) +
+tm_layout(main.title = "CAR Regression with Radii Covariates", 
+          frame = FALSE, 
+          legend.outside = TRUE)
+
+tm_shape(project_grid, bbox = bbox_project) +
+  tm_polygons(col = "radii_resids", 
+              style = "fixed", 
+              midpoint = 0,
+              breaks = c(-Inf, -50, -5, 5, 50, Inf),
+              palette = "PiYG", n = 5,
+              border.alpha = 0.5, 
+              title = "Residuals", 
+              legend.hist = TRUE) + 
+tm_shape(hexagons_outside_analysis) +  
+  tm_polygons(col = "grey20", border.alpha = 0.1) +
+tm_layout(main.title = "GLM with Radii Covariates", 
+          frame = FALSE, 
+          legend.outside = TRUE)
+```
+
+### Plots to Inspect Outliers with High Collisions
+
+```{r inspect_outliers, eval = FALSE}
+
+png(file=paste0(fp_figures,"areal_unit_outliers", ".png"), width = 4, height = 4, unit = "in", res = 225, antialias = "cleartype")
+
+tm_shape(canvas_outliers) + 
+  tm_rgb() +
+tm_shape(project_outliers_4326) + 
+  tm_borders(col = "red", lwd = 2) +
+tm_shape(collisions_outliers_4326) +
+  tm_dots(col = "darkorange2", 
+          size = .20, 
+          alpha = .90) +
+tm_layout(main.title = "Outlying Areal Units: Collisions", 
+          frame = FALSE, 
+          legend.outside = TRUE)
+
+dev.off()
+
+pairs1 <- c("collision_count", "liquor_count",
+            "traffic_light_count", "street_light_count",
+            "pothole_count")        
+
+pairs2 <- c("collision_count", "oci_avg", 
+            "liquor_avg", "pholes_avg", 
+            "t_lights_avg", "s_lights_avg")
+ 
+project_grid_no_outliers_sp <- as_Spatial(project_grid_no_outliers)
+pairs_df4    <- dplyr::select(project_grid_no_outliers_sp@data, pairs1)
+pairs_df5    <- dplyr::select(project_grid_no_outliers_sp@data, pairs2)
+
+# OUTLIERS - SCATTERPLOTS WITHOUT OUTLIER
+
+par(mfrow=c(2, 2))
+plot_pairs_cont(pairs_df4, yvar = "collision_count")
+
+par(mfrow=c(2, 3))
+plot_pairs_cont(pairs_df5, yvar = "collision_count")
+```
+
+
+
+## Load Raw Data Components Individually
+
+```{r load_raw, eval = FALSE}
+fp_raw_data <- "~/GitHub/project-spatial-poisson-collisions/raw_data/"
+
+fp_data_obj <- "~/GitHub/project-spatial-poisson-collisons/data_objs/"
+
+
+
+load(file = paste0(fp_data_obj, "project_bounding_box.RData")) # bounding box
+
+hex_grid           <- readOGR("CMTY_HEX_GRID_240_ACRES", dsn = paste0(fp_raw_data,"HEX_240"))
+
+paving_raw         <- readOGR("sd_paving_segs_datasd", dsn = paste0(fp_raw_data,"paving_projects"))
+
+OCI_raw            <- read.csv(paste0(fp_raw_data,"oci_2015_datasd.csv"))
+
+liquor_raw         <- readOGR("PLACES", dsn = paste0(fp_raw_data,"points_of_interest"))
+
+str_lights_raw     <- readOGR("Street_Light", dsn = paste0(fp_raw_data,"street_lights"))
+
+traf_lights_raw    <- readOGR("Traffic_Signal", dsn =paste0(fp_raw_data,"traffic_signals"))
+
+potholes_raw       <- read.csv(paste0(fp_raw_data,"pothole_requests_datasd_v1.csv"))
+
+sd_boundary_city   <- readOGR("san_diego_boundary_datasd", dsn = paste0(fp_raw_data,"Boundary"))
+
+sd_boundary_county <- counties(state = "CA",  class = "sf")
+
+
+# collisions prior to geocoding
+collisions_raw   <- read.csv(paste0(fp_raw_data,"pd_collisions_details_datasd.csv"))
+
+# geocoded collisions
+collisions_ll    <- readRDS(paste0(fp_data_obj, "collisions_done.rds"))
+```
+
+
+### Filter and Standardize Raw Data Objects
+```{r data_objs, eval = FALSE}
+## CRS objects
+sp_crs_4326 <- CRS(SRS_string ='EPSG:4326')
+sp_crs_proj <- CRS(SRS_string ='EPSG:2230')
+
+sf_crs_4326 <- st_crs(sp_crs_4326)
+sf_crs_proj <- st_crs(sp_crs_proj)
+
+# boundary
+sd_boundary_city <- st_as_sf(sd_boundary_city, crs= sf_crs_proj)
+sd_boundary_city_4326 <- st_transform(sd_boundary_city, crs= sf_crs_4326)
+
+sd_boundary_county <- sd_boundary_county[sd_boundary_county$NAME == "San Diego", ]
+sd_boundary_county <- st_transform(sd_boundary_county, crs=sf_crs_proj)
+sd_boundary_county_4326 <- st_transform(sd_boundary_county, crs=sf_crs_4326)
+
+
+## AGGREGATION GRID
+hex_grid_4326 <- spTransform(hex_grid, sp_crs_4326)
+
+## BOUNDING BOX
+bbox_project_4326 <- st_transform(bbox_project, sf_crs_4326)
+bbox_zoom_4326 <- st_transform(bbox_zoom, sf_crs_4326)
+
+## COLLISIONS
+
+# geocoded collisions filtered by date
+collisions_2019_4326 <- collisions_ll[collisions_ll$POSIX >= as.POSIXct("2019-01-01 00:00") & 
+                                 collisions_ll$POSIX <= as.POSIXct("2019-12-31 23:59"), ]
+
+coordinates(collisions_2019_4326)     <-c("lon", "lat")
+proj4string(collisions_2019_4326)     <-CRS(SRS_string='EPSG:4326')
+collisions_2019_4326 <- spTransform(collisions_2019_4326, sp_crs_4326)
+collisions_2019 <- spTransform(collisions_2019_4326, sp_crs_proj)
+
+## POTHOLES
+
+# potholes, 2019 + or - one year.  (2018-2020)
+potholes_raw <- potholes_raw[!is.na(potholes_raw$lat), ]
+potholes_raw$POSIX <-as.POSIXlt(strptime(as.character(
+                              potholes_raw$date_requested), "%Y-%m-%d"))
+
+potholes_18t20_4326 <- potholes_raw[potholes_raw$POSIX >= as.POSIXct("2018-01-01 00:00") & 
+                               potholes_raw$POSIX <= as.POSIXct("2020-12-31 23:59"), ]
+
+coordinates(potholes_18t20_4326)      <-c("lng", "lat")
+proj4string(potholes_18t20_4326)      <-CRS(SRS_string='EPSG:4326')
+colnames(potholes_18t20_4326@coords)  <-c("lon", "lat")
+
+potholes_18t20 <- spTransform(potholes_18t20_4326, sp_crs_proj)
+
+## ROAD CONDITIONS
+
+
+# assign roads an OCI number based on ID
+paving_OCI <- sp::merge(paving_raw, OCI_raw, 
+                        by.x = "sapid", 
+                        by.y = "seg_id", all.x = TRUE)
+
+paving_OCI_4326      <- spTransform(paving_OCI, CRSobj = sp_crs_4326)
+
+
+## LIQUOR STORES
+
+# liquor object contains many business types, limit to liquor businesses
+liquor <- liquor_raw[liquor_raw$TYPE =="Liquor", ]
+
+liquor <- spTransform(liquor, CRSobj = sp_crs_proj)
+
+liquor_4326          <- spTransform(liquor, CRSobj = sp_crs_4326)
+
+## TRAFFIC LIGHTS
+traf_lights          <- traf_lights_raw
+traf_lights_4326     <- spTransform(traf_lights, CRSobj = sp_crs_4326)
+
+## STREET LIGHTS
+str_lights          <- str_lights_raw
+str_lights_4326      <- spTransform(str_lights, CRSobj = sp_crs_4326)
+
+## Mapping Raster Objects
+
+# Centerpoint: San Diego 
+sdlonglat <- as.numeric(geocode("San Diego, California"))
+
+# Manual N-S, E-W Corrections
+sdlonglat[[2]] <- sdlonglat[[2]] + 0.15
+sdlonglat[[1]] <- sdlonglat[[1]] + 0.20
+
+canvas <- get_googlemap(sdlonglat, 
+                        zoom = 10, 
+                        size = c(640, 640), 
+                        scale = 2, 
+                        maptype = "hybrid")
+
+canvas <- ggmap_rast(canvas)
+
+
+## Centerpoint: 6th and B street
+ll_loc <- c(-117.1603959, 32.7177981)
+
+
+
+canvas_outliers <- get_googlemap(ll_loc,
+                         zoom = 15,
+                         size = c(640, 640),
+                         scale = 2,
+                         maptype = "hybrid")
+
+canvas_outliers     <- ggmap_rast(canvas_outliers)
+
+
+rm(paving_raw, OCI_raw, liquor_raw, str_lights_raw, traf_lights_raw, potholes_raw, collisions_raw, collisions_ll)
+```
+
+
+## Geo-Coding Collisions from Street Addresses
+
+```{r geocoding, eval = FALSE }
+fp_geocoding <- "~/GitHub/project-spatial-poisson-collisions/api_geocoding_results/"
+fp_geocoding <- "D:/OneDrive/temp/project-spatial-poisson-collisons/api_geocoding_results/"
+  
+  
+var_names <- colnames(collisions_raw)
+
+vars <- var_names[c(2,10:16,20:21)]
+
+collisions_df <- select(collisions_raw, vars)
+
+collisions_df$POSIX   <- as.POSIXlt(strptime(as.character(
+                              collisions_df$date_time), "%Y-%m-%d"))
+
+collisions_df$injured <- as.integer(collisions_df$injured)
+collisions_df$killed  <- as.integer(collisions_df$killed)
+
+collisions_df$deaths_injuries <- rep(0, 
+                                  nrow(collisions_df))
+
+collisions_df$deaths_injuries <- collisions_df$injured + 
+                                 collisions_df$killed
+
+collisions_df <- collisions_df[collisions_df$deaths_injuries > 0, ]
+
+collisions_df <- distinct(collisions_df)
+
+# One-Street
+collisions_1street <- filter(collisions_df, 
+                             address_name_intersecting == " ")
+
+collisions_1street$primary_address <- paste(
+collisions_1street$address_no_primary, 
+collisions_1street$address_pd_primary, 
+collisions_1street$address_road_primary, 
+collisions_1street$address_sfx_primary, "San Diego County, CA")
+
+collisions_1street$cross_street <- rep("", 
+                                  nrow(collisions_1street))
+
+collisions_1street$geo_lookup   <- rep("", 
+                                  nrow(collisions_1street))
+
+# X-Street
+collisions_xstreet <- filter(collisions_df, 
+                             address_name_intersecting != " ")
+
+collisions_xstreet$primary_address <- paste(
+    collisions_xstreet$address_pd_primary, 
+    collisions_xstreet$address_road_primary, 
+    collisions_xstreet$address_sfx_primary)
+
+collisions_xstreet$cross_street <- paste( 
+    collisions_xstreet$address_name_intersecting, 
+    collisions_xstreet$address_sfx_intersecting)
+
+collisions_xstreet$geo_lookup <- paste( 
+    collisions_xstreet$primary_address,
+    "AND",   
+    collisions_xstreet$cross_street,
+    ", San Diego County, CA")
+
+# Split to maximize completion chance of api coding
+collisions_1street1 <- collisions_1street[1:5000, ]
+collisions_1street2 <- collisions_1street[5001:10000, ]
+collisions_1street3 <- collisions_1street[10001:15000, ]
+collisions_1street4 <- collisions_1street[15001:20000, ]
+collisions_1street5 <- collisions_1street[20001:24820, ]
+
+longlat1 <-ggmap::geocode(collisions_1street1$primary_address)
+
+collisions_1street1 <- cbind(collisions_1street1,longlat1) 
+
+# saveRDS(collisions_1street1, file = paste0(fp_geocoding, "collisions_1street1.rds"))
+
+longlat2 <-ggmap::geocode(collisions_1street2$primary_address)
+collisions_1street2 <- cbind(collisions_1street2,longlat2)
+# saveRDS(collisions_1street2, file = paste0(fp_geocoding, "collisions_1street2.rds"))
+
+longlat3 <-ggmap::geocode(collisions_1street3$primary_address)
+collisions_1street3 <- cbind(collisions_1street3,longlat3) 
+# saveRDS(collisions_1street3, file = paste0(fp_geocoding, "collisions_1street3.rds"))
+
+longlat4 <-ggmap::geocode(collisions_1street4$primary_address)
+collisions_1street4 <- cbind(collisions_1street4,longlat4) 
+# saveRDS(collisions_1street4, file = paste0(fp_geocoding, "collisions_1street4.rds"))
+
+longlat5 <-ggmap::geocode(collisions_1street5$primary_address)
+collisions_1street5 <- cbind(collisions_1street5,longlat5)
+# saveRDS(collisions_1street5, file = paste0(fp_geocoding, "collisions_1street5.rds"))
+
+longlat <-ggmap::geocode(collisions_xstreet$geo_lookup)
+collisions_xstreet <- cbind(collisions_xstreet,longlat)
+# saveRDS(collisions_xstreet, file = paste0(fp_geocoding, "collisions_xstreet.rds"))
+
+# aggregate geocoded locations
+collisions_1street_agg <- rbind(collisions_1street1,
+                                collisions_1street2,
+                                collisions_1street3,
+                                collisions_1street4,
+                                collisions_1street5)
+
+collisions_all <- rbind(collisions_1street_agg,collisions_xstreet) 
+
+sapply(collisions_all, function(x) sum(is.na(x)))
+
+# saveRDS(collisions_all, file = paste0(fp_geocoding, "collisions_all.rds"))
+
+# investigate errors
+errors <- read.csv(paste0(fp_geocoding, "errors.csv")
+
+err_index <- which(errors$Error =="ERR")
+
+collision_errors <- data.frame(matrix(nrow=116,ncol=17))
+
+k <- 1
+
+for (i in err_index) {
+collision_errors[k, ] <- collisions_all[i, ] 
+k <- k+1
+}
+  
+colnames(collision_errors) <- colnames(collisions_all)
+
+collisions_final <- filter(collisions_all, 
+                                  !row_number() %in% err_index)
+
+sapply(collisions_final, function(x) sum(is.na(x)))
+
+collisions_na   <- collisions_final[is.na(collisions_final$lon), ]
+
+collisions_done <- collisions_final[!is.na(collisions_final$lon), ]
+
+sapply(collisions_done, function(x) sum(is.na(x)))
+
+collisions_errors_done <- rbind(collision_errors, collisions_na)
+
+collisions_errors_done <- collisions_errors_done$POSIX <- as.POSIXlt(strptime(as.character(
+  collisions_errors_done$date_time), "%Y-%m-%d"))
+
+#saveRDS(collisions_done, file = paste0(fp_geocoding, "collisions_done.rds"))
+
+#saveRDS(collisions_errors_done, file = paste0(fp_geocoding, "collisions_errors_done.rds"))
+```
+
+
+## Construct Primary Data Objects
+
+### Step \#1: Filter Data to Bounding Box
+
+```{r proj_grid1, eval = FALSE}
+col_2019_sf             <- st_as_sf(collisions_2019)
+
+col_2019_inside         <- col_2019_sf[bbox_project, ]
+
+collisions_outside_bbox <- anti_join(col_2019_sf, as.data.frame(col_2019_inside))
+
+col_2019_inside_4326      <- st_transform(col_2019_inside, crs = sf_crs_4326)
+col_2019_outside_4326     <- st_transform(collisions_outside_bbox,  crs = sf_crs_4326)
+```
+
+### Step \#2: OCI Weight Assignment Per Collision 
+
+```{r proj_grid2, eval = FALSE}
+
+col_2019_inside_sp <- as_Spatial(col_2019_inside)
+
+roads_buffer   <- gBuffer(paving_OCI, 
+                        byid = TRUE,
+                        width = 200)
+
+collisions_oci <- over(col_2019_inside_sp, 
+                       roads_buffer, 
+                       returnList = TRUE)
+
+results <- c()
+
+for (i in 1:length(col_2019_inside_sp)) {
+w <- sum(collisions_oci[[i]][["oci_wt"]], 
+         na.rm = TRUE)  
+
+oci_calc <- sum(collisions_oci[[i]][["oci"]] * 
+                collisions_oci[[i]][["oci_wt"]], 
+                na.rm = TRUE) 
+
+results[i] <- oci_calc / w
+}
+
+collisions_project     <- col_2019_inside
+collisions_project$oci <- results
+
+collisions_wo_oci  <- collisions_project[is.na(collisions_project$oci) , ] 
+collisions_project <- collisions_project[!is.na(collisions_project$oci) , ] 
+
+# saveRDS(collisions_wo_oci, file = paste0(fp_data_obj, "collisions_lacking_oci.rds"))
+```
+
+### Step \#3: Radius Counts By Collision
+
+```{r proj_grid3, eval = FALSE}
+ppp_col         <- as.ppp(collisions_project)
+ppp_liquor      <- as.ppp(liquor)
+ppp_potholes    <- as.ppp(potholes_18t20)
+ppp_s.lights    <- as.ppp(str_lights)
+ppp_t.lights    <- as.ppp(traf_lights)
+
+ppp1 <- crosspaircounts(ppp_col, ppp_liquor, r = 2500)  
+ppp2 <- crosspaircounts(ppp_col, ppp_potholes, r = 1000)
+ppp3 <- crosspaircounts(ppp_col, ppp_s.lights, r = 500)
+ppp4 <- crosspaircounts(ppp_col, ppp_t.lights, r = 500)
+
+collisions_project$liquor_within_rad   <- ppp1
+collisions_project$pholes_within_rad   <- ppp2
+collisions_project$s.lights_within_rad <- ppp3
+collisions_project$t.lights_within_rad <- ppp4
+```
+
+### Step \#4: Aggregate by Hexagon
+
+```{r proj_grid4, eval = FALSE}
+collisions_project_sp <- as_Spatial(collisions_project)
+
+liquor_counts <- over(liquor, hex_grid)
+counts1 <- as.data.frame(table(liquor_counts$HEXAGONID))
+colnames(counts1) <- c("HEXAGONID", "liquor_count")
+
+t.light_counts <- over(traf_lights, hex_grid)
+counts2 <- as.data.frame(table(t.light_counts$HEXAGONID))
+colnames(counts2) <- c("HEXAGONID", "traffic_light_count")
+
+s.light_counts <- over(str_lights, hex_grid)
+counts3 <- as.data.frame(table(s.light_counts$HEXAGONID))
+colnames(counts3) <- c("HEXAGONID", "street_light_count")
+
+collision_counts <- over(collisions_project_sp, hex_grid)
+counts4 <- as.data.frame(table(collision_counts$HEXAGONID))
+colnames(counts4) <- c("HEXAGONID", "collision_count")
+
+pothole_counts <- over(potholes_18t20, hex_grid)
+counts5 <- as.data.frame(table(pothole_counts$HEXAGONID))
+colnames(counts5) <- c("HEXAGONID", "pothole_count")
+
+hex_col_counts <- over(hex_grid, collisions_project_sp, 
+                       returnList = T)
+
+hexagon_count  <- merge(counts1, counts2, 
+                        by = "HEXAGONID", 
+                        all.x = TRUE, 
+                        all.y = TRUE)
+
+hexagon_count  <- merge(hexagon_count, counts3, 
+                        by = "HEXAGONID", all.x = TRUE, all.y = TRUE)
+
+hexagon_count  <- merge(hexagon_count, counts4, 
+                        by = "HEXAGONID", all.x = TRUE, all.y = TRUE)
+
+hexagon_count  <- merge(hexagon_count, counts5, 
+                        by = "HEXAGONID", all.x = TRUE, all.y = TRUE)
+
+data_grid_2019 <- sp::merge(hex_grid, hexagon_count, 
+                            by = "HEXAGONID", 
+                            all.x = TRUE)
+
+grid_results <- c()
+
+for (i in 1:length(hex_grid)) {
+  grid_results[i] <- mean(hex_col_counts[[i]][["oci"]], na.rm = TRUE)  
+
+}
+
+data_grid_2019@data$oci_avg <- grid_results
+
+grid_results <- c()
+
+for (i in 1:length(hex_grid)) {
+  grid_results[i] <- mean(hex_col_counts[[i]][["liquor_within_rad"]], na.rm = TRUE)  
+
+}
+
+data_grid_2019@data$liquor_avg <- grid_results
+
+grid_results <- c()
+
+for (i in 1:length(hex_grid)) {
+  grid_results[i] <- mean(hex_col_counts[[i]][["pholes_within_rad"]], na.rm = TRUE)  
+
+}
+
+data_grid_2019@data$pholes_avg <- grid_results
+
+grid_results <- c()
+
+for (i in 1:length(hex_grid)) {
+  grid_results[i] <- mean(hex_col_counts[[i]][["t.lights_within_rad"]], na.rm = TRUE)  
+
+}
+
+data_grid_2019@data$t_lights_avg <- grid_results
+
+grid_results <- c()
+
+for (i in 1:length(hex_grid)) {
+  grid_results[i] <- mean(hex_col_counts[[i]][["s.lights_within_rad"]], na.rm = TRUE)  
+
+}
+
+data_grid_2019@data$s_lights_avg <- grid_results
+```
+
+### Step \#5: Exclude Hexagons From Analysis
+
+```{r projgrid5, eval = FALSE}
+# Broad Stroke - Remove Hexagons outside bounding box.
+data_grid_2019@data[is.na(data_grid_2019@data)] <- 0
+
+data_2019_sf      <- st_as_sf(data_grid_2019)
+
+data_grid_inside  <- data_2019_sf[bbox_project, ]
+data_grid_outside <- anti_join(data_2019_sf, as.data.frame(data_grid_inside))
+
+# Fine Stroke - Remove Hexagons inside bounding box, but excluded from analysis.
+
+takeout <- read.csv(paste0(fp_raw_data, "ineligible_areal_units.csv"))
+
+colnames(takeout) <- "HEXAGONID"
+
+takeout_v <- takeout$HEXAGONID
+
+hexagons_removed <- data_grid_inside[data_grid_inside$HEXAGONID %in% takeout_v, ]
+
+project_grid     <- data_grid_inside[!data_grid_inside$HEXAGONID %in% takeout_v, ]
+
+hexagons_removed <- rbind(data_grid_outside, hexagons_removed)
+
+hexagons_outside_analysis <- hexagons_removed[bbox_project,]
+
+outliers <- c(1667,1726)
+
+project_grid_outliers  <- project_grid[project_grid$HEXAGONID %in% outliers, ]
+
+project_grid_no_outliers      <- project_grid[!project_grid$HEXAGONID %in% outliers, ]
+
+project_grid_outliers_4326    <- st_transform(project_grid_outliers, crs = sf_crs_4326)
+
+
+collisions_sf       <- st_as_sf(collisions_2019)
+
+collisions_sf_4326  <- st_as_sf(collisions_2019_4326)
+
+collisions_outliers <- collisions_sf[project_grid_outliers_only, ]
+
+collisions_outliers_4326 <- collisions_sf_4326[project_grid_outliers_4326, ]
+
+# save(bbox_project,
+#      bbox_project_4326,
+#      bbox_zoom,
+#      bbox_zoom_4326,
+#      sd_boundary_city,
+#      sd_boundary_county,
+#      sd_boundary_city_4326,
+#      sd_boundary_county_4326,
+#      canvas,
+#      canvas_outliers,
+#      sf_crs_proj,
+#      sf_crs_4326,
+#      sp_crs_proj,
+#      sp_crs_4326,
+#      roads_buffer,
+#      collisions_2019,
+#      col_2019_inside_4326,
+#      col_2019_outside_4326,
+#      project_grid,
+#      project_grid_no_outliers,
+#      hexagons_outside_analysis,
+#      project_outliers,
+#      project_outliers_4326,
+#      collisions_wo_oci,
+#      collisions_outliers,
+#      collisions_outliers_4326,
+#      locations_agg,
+#      hex_agg_lines,
+#      fit_car_pois3,
+#      fit_car_pois5, file = paste0(fp_data_obj, "vis_objects.RData"))
+```
+
+### Ad Hoc Map Objects
+```{r }
+collisions_agg <- col_2019_inside_4326[ ,1]
+
+collisions_agg <- rbind(collisions_agg, col_2019_outside_4326[ ,1])
+
+collisions_agg[, 1] <- "Serious Collisions"
+
+collisions_agg$viz = 0.9
+
+traf_lights_4326     <- spTransform(traf_lights_raw, CRSobj = sp_crs_4326)
+
+traff_agg <- st_as_sf(traf_lights_4326, crs = sf_crs_4326)
+
+traff_agg <- traff_agg[, 1]
+
+traff_agg[, 1] <- "Traffic Lights"
+
+traff_agg$viz = 0.9
+
+
+
+liquor <- liquor_raw[liquor_raw$TYPE =="Liquor", ]
+
+liquor <- spTransform(liquor, CRSobj = sp_crs_proj)
+
+liquor_sf <- st_as_sf(liquor, crs = sf_crs_proj)
+
+liquor_agg <- liquor_sf[sd_boundary_city,]
+
+liquor_agg <- st_transform(liquor_agg, crs = sf_crs_4326)
+
+liquor_agg <- liquor_agg[, 1]
+
+liquor_agg[, 1] <- "Liquor Licenses"
+
+liquor_agg$viz = 0.9
+
+potholes_raw <- potholes_raw[!is.na(potholes_raw$lat), ]
+potholes_raw$POSIX <-as.POSIXlt(strptime(as.character(
+                              potholes_raw$date_requested), "%Y-%m-%d"))
+
+pholes <- potholes_raw[potholes_raw$POSIX >= as.POSIXct("2019-01-01 00:00") & 
+                               potholes_raw$POSIX <= as.POSIXct("2019-12-31 23:59"), ]
+
+
+pholes_agg <- st_as_sf(pholes, coords = c("lng", "lat"), crs = sf_crs_4326)
+
+pholes_agg <- pholes_agg[, 1] 
+
+pholes_agg[, 1]  <- "Potholes"
+
+pholes_agg$viz = 0.4
+
+
+names(traff_agg)[1] <- names(liquor_agg)[1] <- names(collisions_agg)[1] <- names(pholes_agg)[1] <-"type"
+
+locations_agg <- rbind(collisions_agg, liquor_agg, traff_agg, pholes_agg)
+
+grid_sf <- st_as_sf(hex_grid, crs = sf_crs_proj)
+
+outside_id <- hexagons_outside_analysis$HEXAGONID
+
+in_units  <- grid_sf[!(grid_sf$HEXAGONID %in% outside_id),]
+out_units <- grid_sf[grid_sf$HEXAGONID %in% outside_id,]
+
+in_units  <- in_units[,1]
+out_units <- out_units[,1]
+
+in_units[,1]  <- "Eligible"
+out_units[,1] <- "Ineligible"
+
+names(in_units)[1] <- names(out_units)[1] <- "Status"
+
+hex_agg <- rbind(in_units, out_units)
+
+hex_agg_lines <- sf::st_cast(hex_agg, "MULTILINESTRING")
+```

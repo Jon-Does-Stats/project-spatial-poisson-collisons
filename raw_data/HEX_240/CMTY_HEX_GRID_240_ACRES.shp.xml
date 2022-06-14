@@ -1,0 +1,466 @@
+<metadata xml:lang="en"><Esri><CreaDate>20170110</CreaDate><CreaTime>15572400</CreaTime><ArcGISFormat>1.0</ArcGISFormat><ArcGISstyle>RGDW_Publication_1.4</ArcGISstyle><SyncOnce>FALSE</SyncOnce><ModDate>20170111</ModDate><ModTime>08063100</ModTime><scaleRange><minScale>150000000</minScale><maxScale>5000</maxScale></scaleRange><ArcGISProfile>RGDW_Publication</ArcGISProfile><DataProperties><itemProps><imsContentType export="False" /><itemName Sync="TRUE">CMTY_HEX_GRID_240_ACRES</itemName><nativeExtBox><westBL Sync="TRUE">6150763.740016</westBL><eastBL Sync="TRUE">6613437.000363</eastBL><southBL Sync="TRUE">1775304.095046</southBL><northBL Sync="TRUE">2129759.999322</northBL><exTypeCode Sync="TRUE">1</exTypeCode></nativeExtBox><itemLocation><linkage Sync="TRUE">file://\\gaskill\data\DIVA_Data\PUBLIC_Data\Shapefiles_01-11-2017\CMTY_HEX_GRID_240_ACRES.shp</linkage><protocol Sync="TRUE">Local Area Network</protocol></itemLocation><itemSize Sync="TRUE">0.000</itemSize></itemProps><coordRef><type Sync="TRUE">Projected</type><geogcsn Sync="TRUE">GCS_North_American_1983</geogcsn><csUnits Sync="TRUE">Linear Unit: Foot_US (0.304801)</csUnits><projcsn Sync="TRUE">NAD_1983_StatePlane_California_VI_FIPS_0406_Feet</projcsn><peXml Sync="TRUE">&lt;ProjectedCoordinateSystem xsi:type='typens:ProjectedCoordinateSystem' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:typens='http://www.esri.com/schemas/ArcGIS/10.3'&gt;&lt;WKT&gt;PROJCS[&amp;quot;NAD_1983_StatePlane_California_VI_FIPS_0406_Feet&amp;quot;,GEOGCS[&amp;quot;GCS_North_American_1983&amp;quot;,DATUM[&amp;quot;D_North_American_1983&amp;quot;,SPHEROID[&amp;quot;GRS_1980&amp;quot;,6378137.0,298.257222101]],PRIMEM[&amp;quot;Greenwich&amp;quot;,0.0],UNIT[&amp;quot;Degree&amp;quot;,0.0174532925199433]],PROJECTION[&amp;quot;Lambert_Conformal_Conic&amp;quot;],PARAMETER[&amp;quot;False_Easting&amp;quot;,6561666.666666666],PARAMETER[&amp;quot;False_Northing&amp;quot;,1640416.666666667],PARAMETER[&amp;quot;Central_Meridian&amp;quot;,-116.25],PARAMETER[&amp;quot;Standard_Parallel_1&amp;quot;,32.78333333333333],PARAMETER[&amp;quot;Standard_Parallel_2&amp;quot;,33.88333333333333],PARAMETER[&amp;quot;Latitude_Of_Origin&amp;quot;,32.16666666666666],UNIT[&amp;quot;Foot_US&amp;quot;,0.3048006096012192],AUTHORITY[&amp;quot;EPSG&amp;quot;,2230]]&lt;/WKT&gt;&lt;XOrigin&gt;-118608900&lt;/XOrigin&gt;&lt;YOrigin&gt;-91259500&lt;/YOrigin&gt;&lt;XYScale&gt;35979706.307677768&lt;/XYScale&gt;&lt;ZOrigin&gt;-100000&lt;/ZOrigin&gt;&lt;ZScale&gt;10000&lt;/ZScale&gt;&lt;MOrigin&gt;-100000&lt;/MOrigin&gt;&lt;MScale&gt;10000&lt;/MScale&gt;&lt;XYTolerance&gt;0.0032808333333333331&lt;/XYTolerance&gt;&lt;ZTolerance&gt;0.001&lt;/ZTolerance&gt;&lt;MTolerance&gt;0.001&lt;/MTolerance&gt;&lt;HighPrecision&gt;true&lt;/HighPrecision&gt;&lt;WKID&gt;102646&lt;/WKID&gt;&lt;LatestWKID&gt;2230&lt;/LatestWKID&gt;&lt;/ProjectedCoordinateSystem&gt;</peXml></coordRef><lineage><Process Date="20170111" Time="080640" ToolSource="c:\program files (x86)\arcgis\desktop10.3\ArcToolbox\Toolboxes\Conversion Tools.tbx\FeatureClassToFeatureClass">FeatureClassToFeatureClass \\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES \\gaskill\data\DIVA_Data\PUBLIC_Data\Shapefiles_01-11-2017\ CMTY_HEX_GRID_240_ACRES.shp # "INPUT_FID "Input_FID" true true false 4 Long 0 10 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,INPUT_FID,-1,-1;X_COORD "X_Coord" true true false 8 Double 8 38 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,X_COORD,-1,-1;Y_COORD "Y_Coord" true true false 8 Double 8 38 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,Y_COORD,-1,-1;HEXAGONID "hexagonID" true true false 4 Long 0 10 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,HEXAGONID,-1,-1;ACRES "Acres" true true false 4 Long 0 10 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,ACRES,-1,-1;JURIS "JURIS" true true false 50 Text 0 0 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,JURIS,-1,-1;CMTY "CMTY" true true false 50 Text 0 0 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,CMTY,-1,-1;CMTY_TYPE "CMTY_TYPE" true true false 25 Text 0 0 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,CMTY_TYPE,-1,-1;SHAPE_AREA "SHAPE_AREA" false false true 0 Double 0 0 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,SHAPE.AREA,-1,-1;SHAPE_LEN "SHAPE_LEN" false false true 0 Double 0 0 ,First,#,\\gaskill\SanGIS_apps\DIVA\DIVA_Exports\PUBLIC_Process\PUBS@Reception@default.sde\SANGIS.CMTY_HEX_GRID_240_ACRES,SHAPE.LEN,-1,-1" #</Process><Process Date="20170111" Time="080652" ToolSource="c:\program files (x86)\arcgis\desktop10.3\ArcToolbox\Toolboxes\Data Management Tools.tbx\RepairGeometry">RepairGeometry \\gaskill\data\DIVA_Data\PUBLIC_Data\Shapefiles_01-11-2017\\CMTY_HEX_GRID_240_ACRES.shp DELETE_NULL</Process></lineage></DataProperties><SyncDate>20170111</SyncDate><SyncTime>08063100</SyncTime></Esri><dataIdInfo><idPurp>240 acre scale hexagonal grid as part of a three layer HexBin grid system for displaying community to sub regional data for landuse planning and Live Well analytics, e.g., rate of event per population or amount and intensity of issue per area. </idPurp><idAbs>The origin of the County's Hex-Bin cells comes from a comparison of the US census average mapping area and the average polygon size of the County's general plan. Since general plan elements are significant drivers of sub-regional and community level dynamics and the populations of the census blocks represent the affected population groups, the two were compared. The average size of the US census block in San Diego is 68 acres; the average size of the general plan is 55 acres. Since the general plan depicts largely rural areas the minimum mapping area and average polygon size is already below the described average population size of the census. The average between the two is 60 acres. This size cell is the optimum size to represent phenomena that is adjusted for population size in this County.</idAbs><idCitation><resTitle>CMTY_HEX_GRID_240_ACRES</resTitle><date><pubDate>2017-01-10T00:00:00</pubDate></date><presForm><PresFormCd Sync="TRUE" value="005" /></presForm></idCitation><searchKeys><keyword>hex bins</keyword><keyword>heagonal bins</keyword><keyword>Com360</keyword><keyword>grid</keyword><keyword>community</keyword><keyword>land use</keyword><keyword>planning</keyword></searchKeys><resConst><Consts><useLimit>THIS MAP/DATA IS PROVIDED WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Note: This product may contain information from the SANDAG Regional Information System which cannot be reproduced without the written permission of SANDAG. This product may contain information reproduced with permission granted by Rand McNally  Company&#174; to SanGIS. This map is copyrighted by Rand McNally  Company&#174;. It is unlawful to copy or reproduce all or any part thereof, whether for personal use or resale, without the prior, written permission of Rand McNally  Company&#174;. Copyright SanGIS 2011 - All Rights Reserved. Full text of this legal notice can be found at:http://www.sangis.org/Legal_Notice.htm</useLimit></Consts></resConst><themeKeys><keyword>hexagonal bins, grid, community, land use, planning, Community 360</keyword></themeKeys><placeKeys><keyword>San Diego County</keyword></placeKeys><dataChar><CharSetCd value="004" /></dataChar><idStatus><ProgCd value="004" /></idStatus><dataExt><exDesc>San Diego County, California</exDesc><tempEle><TempExtent><exTemp><TM_Period><tmBegin>2017-01-09T00:00:00</tmBegin></TM_Period></exTemp></TempExtent></tempEle></dataExt><idPoC><rpIndName>Jason Batchelor</rpIndName><rpOrgName>County of San Diego, Planning &amp; Development Services, LUEG-GIS Service</rpOrgName><rpPosName>GIS Coordinator</rpPosName><role><RoleCd value="007" /></role><displayName>Jason Batchelor</displayName><rpCntInfo><cntAddress addressType=""><delPoint>5510 Overland Ave, Suite 310</delPoint><city>San Diego</city><adminArea>CA</adminArea><postCode>92123</postCode><eMailAdd>jason.batchelor@sdcounty.ca.gov</eMailAdd><country>US</country></cntAddress><cntPhone><voiceNum tddtty="">(858) 602-8152</voiceNum></cntPhone></rpCntInfo></idPoC><idPoC><rpIndName>SanGIS</rpIndName><rpOrgName>SanGIS</rpOrgName><role><RoleCd value="005" /></role><rpCntInfo><cntAddress addressType="both"><delPoint>5510 Overland Ave, Suite 230</delPoint><city>San Diego</city><adminArea>California</adminArea><postCode>92123</postCode><eMailAdd>webmaster@sangis.org</eMailAdd><country>US</country></cntAddress><cntPhone><voiceNum tddtty="">(858) 874-7000</voiceNum><faxNum>(858) 874-7002</faxNum></cntPhone></rpCntInfo></idPoC><resMaint><maintFreq><MaintFreqCd value="009" /></maintFreq></resMaint><envirDesc Sync="TRUE">Microsoft Windows Server 2008 R2 Version 6.1 (Build 7601) Service Pack 1; Esri ArcGIS 10.3.1.4959</envirDesc><dataLang><languageCode Sync="TRUE" value="eng" /><countryCode Sync="TRUE" value="USA" /></dataLang><spatRpType><SpatRepTypCd Sync="TRUE" value="001" /></spatRpType><dataExt><geoEle><GeoBndBox esriExtentType="search"><exTypeCode Sync="TRUE">1</exTypeCode><westBL Sync="TRUE">-117.597986</westBL><eastBL Sync="TRUE">-116.080156</eastBL><northBL Sync="TRUE">33.511553</northBL><southBL Sync="TRUE">32.530161</southBL></GeoBndBox></geoEle></dataExt><idCredit>County of San Diego, Planning and Development Services,  LUEG-GIS Service</idCredit><tpCat><TopicCatCd value="003" /></tpCat><tpCat><TopicCatCd value="013" /></tpCat><tpCat><TopicCatCd value="015" /></tpCat><tpCat><TopicCatCd value="016" /></tpCat></dataIdInfo><mdLang><languageCode value="eng" /><countryCode Sync="TRUE" value="USA" /></mdLang><mdChar><CharSetCd value="004" /></mdChar><mdContact><rpIndName>Jason Batchelor</rpIndName><rpOrgName>County of San Diego, Planning &amp; Development Services, LUEG-GIS Service</rpOrgName><rpPosName>GIS Coordinator</rpPosName><role><RoleCd value="007" /></role></mdContact><mdHrLv><ScopeCd value="005" /></mdHrLv><distInfo><distributor><distorCont><rpIndName>SanGIS</rpIndName><rpOrgName>SanGIS</rpOrgName><role><RoleCd value="005" /></role><rpCntInfo><cntAddress addressType="both"><delPoint>5510 Overland Ave, Suite 230</delPoint><city>San Diego</city><adminArea>California</adminArea><postCode>92123</postCode><eMailAdd>webmaster@sangis.org</eMailAdd><country>US</country></cntAddress><cntPhone><voiceNum tddtty="">(858) 874-7000</voiceNum><faxNum>(858) 874-7002</faxNum></cntPhone></rpCntInfo><displayName>SanGIS</displayName></distorCont><distorOrdPrc><ordInstr>Refer to SanGIS website (http://www.sangis.org/services/index.html) to obtain further information on mapping and data extraction services available from SanGIS.</ordInstr></distorOrdPrc></distributor><distTranOps><onLineSrc><orDesc>Downloadable as a Shapefile from http://www.sangis.org/download/index.html</orDesc></onLineSrc><transSize Sync="TRUE">0.000</transSize></distTranOps><distFormat><formatName Sync="TRUE">Shapefile</formatName></distFormat></distInfo><Binary><Thumbnail><Data EsriPropertyType="PictureX">/9j/4AAQSkZJRgABAQEAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a
+HBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIy
+MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCACFAMgDASIA
+AhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA
+AAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3
+ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm
+p6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA
+AwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx
+BhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK
+U1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3
+uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iii
+gAqtfX0Gm2cl3cswiTGSqljyQBwPcimarfrpemT3rpvEQGFzjcScAZ+pFcJrni2TV7J7JbVYYmKl
+m3hycEEemOQPXv0pN2A6j/hMtHwT5sv/AH6P+f8A9Y9RVux8RaXqNyttbXDNMwJCGJhwOvJGP1ry
+rCbTgHrxlU/z6fkaFbY4eNnR1OVZdoIP1/L9ahTYz2mivNLDxjqdiFWRvtcQ/hmxux/vDnP1z0rs
+bDxRpd5aLNLd29q5JBimnUMMfjVppiNqiqCa3pMjbU1SyY+guEP9amTULKRtqXlux9FlU/1pgWaK
+OtFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAYXiyyvdQ0cQWUfmN5gZ1DAEqATxnr
+zivNpA6yuGR0YMQQ2AV+o7f/AFvy9mrB8ReG4NYhM0Sql8i4R+zj+639D2/SplG4Hm2G2n5SOfVe
+P8/+y/knzehH4jj/AD/7L+Q8fls8ciMrq21lKKCCOo/n+lNwvcH3wq/59f0rIY75vQ/TI49qcgbe
+vyseenHNR4X0Of8AdXrSoF3rjrkYyF/z6UAL83oT+I5/z/7N+akMVGVJGT3Xn/P/ALN+bML2B9sq
+v+fT9aMLjjPtlU/z6fkaADyl/wCeQP8A3zz/AJ4/P8zyxjGzI9flowvYH2yq/wCfT9aTCdg2PdV/
+z60AOSJc/wCqHQ9l44/z+VIYweseP++eP8/0/JVC7uh6HPyr6f8A66TC9wffCr/n1/SgBTGAB+72
+/wDfP+f/ANn8kMQ7xgf988f5/p+RhcDOffCp/n1/MUYXuD74Vf8APr+lAB5f+x/6DQIwP+WfPp8v
+P+f6/gUwvYH/AL5X/PpS4XHAP12r/n0/WgA8sH/lnn/vnn/P9fze8YBAEf8ACOPl54/r/wCzd+7M
+L2B9sqv+fT9adIF3dD0GPlT0/wD1frQA3yl/uD6/L/n0/P8AN6l1GE3KD2BApmE7hsf7q/59P1pM
+L3B/75X/AD60Aej+CWZtCfcST57dTnsK6SuZ8DEHQpAO1wwPTg4X0rpq2WwgooopgFFFFABRRRQB
+xvjLQ9ynVLWMl+BcKo+8OgbH6H29gc8T83oT+I5/z/7N+fs7KroyOoZWGCCMgivK9e0N9EvRGTvh
+ky0T7F59j9OPw5rOceozM+b0P1yOfenJu3r94c9cjj9ajwvocf7q9KVAm9cg4zzhV/z61AC/N6Ef
+iOP8/wDsv5L820cEc+o4/X/O38mYXuD74Vf8+v6UuE2jIPXnCp/n1/MUAL83oR+I4/z/AOy/kfN/
+dYe2RTcL3B98Kv8An1/SjA7jn2Vf8+lAEiBs9G6HuOeP8/nTfm9CfxHP+f8A2b80UJnv0OOF9P8A
+9VJhewPtlV/z6frQA87sDgnj1HP6/wCd35p83oT+I5/z/wCzfmhCYGARx3VP8+n5GkwvYH2yq/59
+P1oAd83o35ij5uuCPfI/z/8Aq/EMwvcH/vlf8+tLhc8g/Tav+fX9KAHfN6EfiOP8/wDsv5Pk3bhw
+w+Ud144/z/3z27RYXuD74Vf8+v6U5wm4cHoM/KvoM/1/SkAfN/dP0yP8/wD6vyPm9G/MU3A7Dn/d
+T/Pr+lJhewP/AHyv+fSmB6H4Ez/Ys+c/8fLdf91a6iuU8BODpN1GBwJ8547qvp9K6uto7CCiiimA
+UUUUAFFFFABWfrWmJq2mSWzYEn3omP8AC46H/PrWhRQB4wySRuUdGDKcFSV4I7fpilQNvX5WPPTj
+mtfxbZCz8RTkLhJwJlwo78Hr33An8axUC71x1yMZC/59KwasMX5vQn8Rz/n/ANm/NcNtHyk8+q8/
+5/8AZvzZhewPtlV/z6frRhccZ9sqn+fT8jQA75vQn8Rz/n/2b8zDe598j/Gm4XsD7ZVf8+n60mE7
+Bse6r/n1oAlTdno3Q9xxx/n8qb83oR+I4/z/AOy/kihd3Q9Dn5V9P/10mF7g++FX/Pr+lIB5DAD5
+SOPVf8//ALP5J83oR+I4/wA/+y/k3C4Gc++FT/Pr+YowvcH3wq/59f0pgO+b0b8xR83TBPtkf5//
+AF/gWYXsD/3yv+fSlwuOAfrtX/Pp+tADvm9CfxHP+f8A2b83ybtw+Vj8o7jnj/P/AH137xYXsD7Z
+Vf8APp+tOkC7uh6DHyp6f/q/WkAYb3+uR/j/AJz+Z83o35im4TuGx/ur/n0/WkwvcH/vlf8APrTA
+77wFn+z7zII/fDr/ALorra57wfpsun6T5kjowutsyhewKjg8V0NbLYQUUUUwCiiigAooooAKKKKA
+OV8dWSyaXFeKp8yCQKSMfdbjn8dtcGm7ev3hz1yOP1r1PxDb/avD1/F38kuOO6/MP1FeUoE3rkHG
+ecKv+fWs5oYvzehH4jj/AD/7L+S/NtHBHPqOP1/zt/JmF7g++FX/AD6/pS4TaMg9ecKn+fX8xUAL
+83oR+I4/z/7L+R8391h7ZFNwvcH3wq/59f0owO459lX/AD6UASIGz0boe454/wA/nTfm9CfxHP8A
+n/2b80UJnv0OOF9P/wBVJhewPtlV/wA+n60APO7A4J49Rz+v+d35p83oT+I5/wA/+zfmhCYGARx3
+VP8APp+RpML2B9sqv+fT9aAHfN6N+Yo+brgj3yP8/wD6vxDML3B/75X/AD60uFzyD9Nq/wCfX9KA
+HfN6EfiOP8/+y/k+TduHDD5R3Xjj/P8A3z27RYXuD74Vf8+v6U5wm4cHoM/KvoM/1/SkAfN/dP0y
+P8//AKvyPm9G/MU3A7Dn/dT/AD6/pSYXsD/3yv8An0pgeu6L/wAgLT+c/wCjR/8AoIq9VHRcf2Fp
+2On2aP8A9BFXq3QgooooAKKKKACiiigAooooAgvJreC0le5kVIdpDFmAGMe9ePQBgIxsbtxxXpPi
+/TJNS0bMRy9s3nbeu4AEEfXn/Oa81TbuXb6jBIXH+elZzGL83oT+I5/z/wCzfmuG2j5SefVef8/+
+zfmzC9gfbKr/AJ9P1owuOM+2VT/Pp+RqAHfN6E/iOf8AP/s35mG9z75H+NNwvYH2yq/59P1pMJ2D
+Y91X/PrQBKm7PRuh7jjj/P5U35vQj8Rx/n/2X8kULu6Hoc/Kvp/+ukwvcH3wq/59f0pAPIYAfKRx
+6r/n/wDZ/JPm9CPxHH+f/ZfybhcDOffCp/n1/MUYXuD74Vf8+v6UwHfN6N+Yo+bpgn2yP8//AK/w
+LML2B/75X/PpS4XHAP12r/n0/WgB3zehP4jn/P8A7N+b5N24fKx+Udxzx/n/AL6794sL2B9sqv8A
+n0/WnSBd3Q9Bj5U9P/1frSAMN7/XI/x/zn8z5vRvzFNwncNj/dX/AD6frSYXuD/3yv8An1pgeu6L
+/wAgLT+Mf6NH/wCgir1UdF/5AWn/APXtH/6CKvVuhBRRRQAUUUUAFFFFABRRRQBW1BzHpl069Vhc
+j8jXkEKsvlg7hjHORx+teyXEK3FtLAxIWRChI9CMV5la+FNYuNh+xlBzlpSidM9vvDPbj0PSommw
+Mj5vQj8Rx/n/ANl/Jfm2jgjn1HH6/wCdv5JLEYZXilRlkRirqUXII6/1/Skwm0ZB684VP8+v5isx
+i/N6EfiOP8/+y/kfN/dYe2RTcL3B98Kv+fX9KMDuOfZV/wA+lAEiBs9G6HuOeP8AP5035vQn8Rz/
+AJ/9m/NFCZ79DjhfT/8AVSYXsD7ZVf8APp+tADzuwOCePUc/r/nd+afN6E/iOf8AP/s35oQmBgEc
+d1T/AD6fkaTC9gfbKr/n0/WgB3zejfmKPm64I98j/P8A+r8QzC9wf++V/wA+tLhc8g/Tav8An1/S
+gB3zehH4jj/P/sv5Pk3bhww+Ud144/z/AN89u0WF7g++FX/Pr+lOcJuHB6DPyr6DP9f0pAHzf3T9
+Mj/P/wCr8j5vRvzFNwOw5/3U/wA+v6UmF7A/98r/AJ9KYHrui/8AIC0/nP8Ao0f/AKCKvVU0v/kE
+2X/XBP8A0EVbrcQUUUUAFFFFABRRRQAUUUUAFFFFAHn/AI5s1g1SC5jXm5Q7wAOWXAyfqGA/zg8x
+hto+Unn1Xn/P/s359z47sp7iCxmhjkk2O8ZSOPeSWAIOP+A/rXJR6HqcoATTLwc8b7cL/PHt+tZS
+TuMpfN6E/iOf8/8As35mG9z75H+NbEfhLWZORYsgPQu0X+OfT9asp4G1Zx/y6px/G/8AgppcrAwE
+3Z6N0Pcccf5/Km/N6EfiOP8AP/sv5dXH4BuyfnvbdO3yx7uP096sx/D5BjzdSLeuy3Vf6mnyMDjC
+GAHykceq/wCf/wBn8k+b0I/Ecf5/9l/Lv4/AemKBvnuXOOfuAf8AoNWU8FaGv3rZ34x80rD+RFHI
+wPN/m9G/MUfN0wfpkf59vx/A+pR+GNEjORpsB/3xu/nVuLS9Pgx5Vhax46bIVGP0p8gjyJSXOFyx
+xnAKn/P/ANf87X2G+lOY7G8kG0fchLdvYf5yevOfXVVUUKoAA6AClp8iHc8oj0DWZThNOueuMsFX
++ZH+T9c24vCGtyfethF/vypx+RNemUU+RCILKFrewt4XxvjiVGx6gAVPRRVAFFFFABRRRQAUUUUA
+FFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB//9k=</Data></Thumbnail></Binary><mdDateSt Sync="TRUE">20170111</mdDateSt><eainfo><overview><eaover>240 acre scale hexagonal grid as part of a three layer HexBin grid system for displaying community to sub regional data for landuse planning and Live Well analytics, e.g., rate of event per population or amount and intensity of issue per area. </eaover><eadetcit>none</eadetcit></overview><detailed Name="CMTY_HEX_GRID_240_ACRES"><enttyp><enttypl Sync="TRUE">CMTY_HEX_GRID_240_ACRES</enttypl><enttypt Sync="TRUE">Feature Class</enttypt><enttypc Sync="TRUE">0</enttypc></enttyp><attr><attrlabl Sync="TRUE">FID</attrlabl><attalias Sync="TRUE">FID</attalias><attrtype Sync="TRUE">OID</attrtype><attwidth Sync="TRUE">4</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale><attrdef Sync="TRUE">Internal feature number.</attrdef><attrdefs Sync="TRUE">Esri</attrdefs><attrdomv><udom Sync="TRUE">Sequential unique whole numbers that are automatically generated.</udom></attrdomv></attr><attr><attrlabl Sync="TRUE">Shape</attrlabl><attalias Sync="TRUE">Shape</attalias><attrtype Sync="TRUE">Geometry</attrtype><attwidth Sync="TRUE">0</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale><attrdef Sync="TRUE">Feature geometry.</attrdef><attrdefs Sync="TRUE">Esri</attrdefs><attrdomv><udom Sync="TRUE">Coordinates defining the features.</udom></attrdomv></attr><attr><attrlabl Sync="TRUE">Input_FID</attrlabl><attalias Sync="TRUE">INPUT_FID</attalias><attrtype Sync="TRUE">Integer</attrtype><attwidth Sync="TRUE">10</attwidth><atprecis Sync="TRUE">10</atprecis><attscale Sync="TRUE">0</attscale><attrdef>InputFID</attrdef><attrdefs>LUEG-GIS</attrdefs></attr><attr><attrlabl Sync="TRUE">X_Coord</attrlabl><attalias Sync="TRUE">X_COORD</attalias><attrtype Sync="TRUE">Double</attrtype><attwidth Sync="TRUE">19</attwidth><atprecis Sync="TRUE">18</atprecis><attscale Sync="TRUE">8</attscale><attrdef>X coordinate value for centroid of hexagonal cell.</attrdef><attrdefs>LUEG-GIS</attrdefs></attr><attr><attrlabl Sync="TRUE">Y_Coord</attrlabl><attalias Sync="TRUE">Y_COORD</attalias><attrtype Sync="TRUE">Double</attrtype><attwidth Sync="TRUE">19</attwidth><atprecis Sync="TRUE">18</atprecis><attscale Sync="TRUE">8</attscale><attrdef>Y coordinate value for centroid of hexagonal cell.</attrdef><attrdefs>LUEG-GIS</attrdefs></attr><attr><attrlabl Sync="TRUE">hexagonID</attrlabl><attalias Sync="TRUE">HEXAGONID</attalias><attrtype Sync="TRUE">Integer</attrtype><attwidth Sync="TRUE">10</attwidth><atprecis Sync="TRUE">10</atprecis><attscale Sync="TRUE">0</attscale><attrdef>FID of hexagonal cell numbered in order of generation</attrdef><attrdefs>LUEG-GIS</attrdefs></attr><attr><attrlabl Sync="TRUE">Acres</attrlabl><attalias Sync="TRUE">ACRES</attalias><attrtype Sync="TRUE">Integer</attrtype><attwidth Sync="TRUE">10</attwidth><atprecis Sync="TRUE">10</atprecis><attscale Sync="TRUE">0</attscale><attrdef>Area feature geometry calculated in acres.</attrdef><attrdefs>LUEG-GIS</attrdefs></attr><attr><attrlabl Sync="TRUE">JURIS</attrlabl><attalias Sync="TRUE">JURIS</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">50</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale><attrdef>Jurisdiction where centroid of hexagonal cell is located. (Incorporated Area Names or County of San Diego):
+
+County of San Diego
+
+City of Carlsbad
+
+City of Chula Vista
+
+City of Coronado
+
+City of Del Mar
+
+City of El Cajon
+
+City of Encinitas
+
+City of Escondido
+
+City of Imperial Beach
+
+City of La Mesa
+
+City of Lemon Grove
+
+City of Oceanside
+
+City of Poway
+
+City of San Diego
+
+City of San Marcos
+
+City of Santee
+
+City of Solana Beach
+
+City of Vista
+
+National City</attrdef><attrdefs>LUEG-GIS</attrdefs></attr><attr><attrlabl Sync="TRUE">CMTY</attrlabl><attalias Sync="TRUE">CMTY</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">50</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale><attrdef>Community name where centroid of hexagonal cell is located.
+
+CMTY_TYPE = CITY
+
+City of Carlsbad
+
+City of Chula Vista
+
+City of Coronado
+
+City of Del Mar
+
+City of El Cajon
+
+City of Encinitas
+
+City of Escondido
+
+City of Imperial Beach
+
+City of La Mesa
+
+City of Lemon Grove
+
+City of Oceanside
+
+City of Poway
+
+City of San Diego
+
+City of San Marcos
+
+City of Santee
+
+City of Solana Beach
+
+City of Vista
+
+National City
+
+
+CMTY_TYPE = CPA/SG
+
+Alpine
+
+Barona
+
+Bonsall
+
+Borrego Springs
+
+Boulevard
+
+Central Mountain
+
+County Islands
+
+Crest - Dehesa
+
+Cuyamaca
+
+Descanso
+
+Desert
+
+Fallbrook
+
+Hidden Meadows
+
+Jacumba
+
+Jamul
+
+Julian
+
+Lake Morena / Campo
+
+Lakeside
+
+Mountain Empire
+
+North County Metro
+
+North Mountain
+
+Otay
+
+Pala - Pauma
+
+Palomar Mountain
+
+Pendleton - De Luz
+
+Pine Valley
+
+Potrero
+
+Rainbow
+
+Ramona
+
+San Dieguito
+
+Spring Valley
+
+Sweetwater
+
+Tecate 
+
+Twin Oaks
+
+Valle De Oro
+
+Valley Center
+
+
+CMTY_TYPE = NEIGHBORHOOD; JURIS = City of San Diego
+
+Adams North
+
+Allied Gardens
+
+Alta Vista
+
+Azalea/Hollywood Park
+
+Balboa Park
+
+Barrio Logan
+
+Bay Ho
+
+Bay Park
+
+Bay Terraces
+
+Birdland
+
+Black Mountain Ranch
+
+Burlingame
+
+Carmel Mountain
+
+Carmel Valley
+
+Castle
+
+Cherokee Point
+
+Chollas Creek
+
+Chollas View
+
+Clairemont Mesa East
+
+Clairemont Mesa West
+
+College East
+
+College West
+
+Core-Columbia
+
+Corridor
+
+Del Cerro
+
+Del Mar Heights
+
+Egger Highlands
+
+El Cerrito
+
+Emerald Hills
+
+Encanto
+
+Fairmont Park
+
+Fairmont Village
+
+Golden Hill
+
+Grantville
+
+Harbor
+
+Hillcrest
+
+Jamacha Lomita
+
+Kearny Mesa
+
+Kensington
+
+La Jolla
+
+La Playa
+
+Lake Murray
+
+Lincoln Park
+
+Linda Vista
+
+Little Italy
+
+Logan Heights
+
+Loma Portal
+
+Marina
+
+Midtown
+
+Midway District
+
+Mira Mesa
+
+Miramar
+
+Miramar Ranch North
+
+Mission Bay
+
+Mission Beach
+
+Mission Hills
+
+Mission Valley East
+
+Mission Valley West
+
+Morena
+
+Mountain Empire
+
+Mountain View
+
+Mt Hope
+
+Nestor
+
+North City
+
+North Clairemont
+
+North County Metro
+
+North Mountain
+
+North Park
+
+O'Farrell
+
+Oak Park
+
+Ocean Beach
+
+Ocean Crest
+
+Old Town
+
+Otay
+
+Otay Mesa
+
+Otay Mesa West
+
+Pacific Beach
+
+Palm City
+
+Palomar Mountain
+
+Paradise Hills
+
+Park West
+
+Petco Park
+
+Point Loma Heights
+
+Qualcomm
+
+Rancho Bernardo
+
+Rancho Encantada
+
+Rancho Penasquitos
+
+Redwood Village
+
+Ridgeview/Webster
+
+Rolando
+
+Rolando Park
+
+Roseville / Fleet Ridge
+
+Sabre Springs
+
+San Carlos
+
+San Pasqual
+
+San Ysidro
+
+Scripps Ranch
+
+Serra Mesa
+
+Sherman Heights
+
+Skyline
+
+Sorrento Valley
+
+South Park
+
+Southcrest
+
+Stockton
+
+Sunset Cliffs
+
+Swan Canyon
+
+Talmadge
+
+Teralta East
+
+Tierrasanta
+
+Tijuana River Valley
+
+Torrey Highlands
+
+Torrey Pines
+
+Torrey Preserve
+
+University City
+
+University Heights
+
+Valencia Park
+
+Wooded Area</attrdef><attrdefs>LUEG-GIS</attrdefs></attr><attr><attrlabl Sync="TRUE">CMTY_TYPE</attrlabl><attalias Sync="TRUE">CMTY_TYPE</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">25</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale><attrdef>Community type where centroid of hexagonal cell is located.
+
+CITY: Incorporated Area; (if JURIS = City of San Diego, then CMTY_TYPE = NEIGHBORHOOD) 
+
+CPA/SG: County of San Diego Community Planning Area / Sponsor Group
+
+NEIGHBORHOOD:  City of San Diego Neighborhood</attrdef><attrdefs>LUEG-GIS</attrdefs></attr><attr><attrlabl Sync="TRUE">Shape_Area</attrlabl><attalias Sync="TRUE">SHAPE_AREA</attalias><attrtype Sync="TRUE">Double</attrtype><attwidth Sync="TRUE">19</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale><attrdef Sync="TRUE">Area of feature in internal units squared.</attrdef><attrdefs Sync="TRUE">Esri</attrdefs><attrdomv><udom Sync="TRUE">Positive real numbers that are automatically generated.</udom></attrdomv></attr><attr><attrlabl Sync="TRUE">SHAPE_LEN</attrlabl><attalias Sync="TRUE">SHAPE_LEN</attalias><attrtype Sync="TRUE">Double</attrtype><attwidth Sync="TRUE">19</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale></attr></detailed></eainfo><mdHrLvName Sync="TRUE">dataset</mdHrLvName><refSysInfo><RefSystem><refSysID><identCode Sync="TRUE" code="2230" /><idCodeSpace Sync="TRUE">EPSG</idCodeSpace><idVersion Sync="TRUE">8.6.2</idVersion></refSysID></RefSystem></refSysInfo><spatRepInfo><VectSpatRep><geometObjs Name="CMTY_HEX_GRID_240_ACRES"><geoObjTyp><GeoObjTypCd Sync="TRUE" value="002" /></geoObjTyp><geoObjCnt Sync="TRUE">0</geoObjCnt></geometObjs><topLvl><TopoLevCd Sync="TRUE" value="001" /></topLvl></VectSpatRep></spatRepInfo><spdoinfo><ptvctinf><esriterm Name="CMTY_HEX_GRID_240_ACRES"><efeatyp Sync="TRUE">Simple</efeatyp><efeageom Sync="TRUE" code="4" /><esritopo Sync="TRUE">FALSE</esritopo><efeacnt Sync="TRUE">0</efeacnt><spindex Sync="TRUE">FALSE</spindex><linrefer Sync="TRUE">FALSE</linrefer></esriterm></ptvctinf></spdoinfo></metadata>
